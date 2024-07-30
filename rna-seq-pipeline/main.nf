@@ -2,6 +2,7 @@
 
 params.reads = "$baseDir/data/*_{1,2}.fastq.gz"
 params.outdir = "$baseDir/results"
+params.single_end = false  // Set to true if working with single-end data
 
 process CreateOutputDir {
     script:
@@ -67,10 +68,17 @@ process Cutadapt {
     file "trimmed_${fastq.baseName}.fastq.gz" into trimmed_reads
 
     script:
-    """
-    adapters=$(grep -v '#' ${overrepresented} | awk '{print $1}' | paste -sd ',' -)
-    cutadapt -a ${adapters} -A ${adapters} -o ${params.outdir}/trimmed_${fastq.baseName}.fastq.gz ${fastq}
-    """
+    if (params.single_end) {
+        """
+        adapters=$(grep -v '#' ${overrepresented} | awk '{print $1}' | paste -sd ',' -)
+        cutadapt -a ${adapters} -o ${params.outdir}/trimmed_${fastq.baseName}.fastq.gz ${fastq}
+        """
+    } else {
+        """
+        adapters=$(grep -v '#' ${overrepresented} | awk '{print $1}' | paste -sd ',' -)
+        cutadapt -a ${adapters} -A ${adapters} -o ${params.outdir}/trimmed_${fastq.baseName}.fastq.gz ${fastq}
+        """
+    }
 }
 
 process STAR {
@@ -83,9 +91,15 @@ process STAR {
     file "${trimmed_fastq.baseName}.bam" into aligned_reads
 
     script:
-    """
-    STAR --genomeDir genome/STAR_index --readFilesIn ${trimmed_fastq.join(' ')} --runThreadN 4 --outFileNamePrefix ${params.outdir}/${trimmed_fastq.baseName}_ --outSAMtype BAM SortedByCoordinate
-    """
+    if (params.single_end) {
+        """
+        STAR --genomeDir genome/STAR_index --readFilesIn ${trimmed_fastq} --runThreadN 4 --outFileNamePrefix ${params.outdir}/${trimmed_fastq.baseName}_ --outSAMtype BAM SortedByCoordinate
+        """
+    } else {
+        """
+        STAR --genomeDir genome/STAR_index --readFilesIn ${trimmed_fastq.join(' ')} --runThreadN 4 --outFileNamePrefix ${params.outdir}/${trimmed_fastq.baseName}_ --outSAMtype BAM SortedByCoordinate
+        """
+    }
 }
 
 process FeatureCounts {
