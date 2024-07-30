@@ -11,7 +11,7 @@ This pipeline leverages widely used bioinformatics tools to process raw RNA-seq 
 For single-end data, set the single_end parameter to true:
 
 ```bash
-nextflow run main.nf --single_end true
+$ nextflow run main.nf --single_end true
 ```
 
 Structure the directory as follows:
