@@ -1,6 +1,6 @@
 # RNA-seq analayis pipeline script
 
-This pipeline leverages widely used bioinformatics tools to process raw paired-end fastq files using the following tools:
+This pipeline leverages widely used bioinformatics tools to process raw RNA-seq fastq files using the following tools:
 * FastQC: Perform quality control
 * MultiQC: Perform quality control
 * Cutadapt: Trim poor quality and overrepresented sequence reads
