@@ -1,15 +1,23 @@
 # RNA-seq analayis pipeline script
 
+This pipeline leverages widely used bioinformatics tools to process raw paired-end fastq files using the following tools:
+* FastQC: Perform quality control
+* MultiQC: Perform quality control
+* Cutadapt: Trim poor quality and overrepresented sequence reads
+* STAR: Align the fastq files to the reference genome
+* FeatureCounts: Create mRNA read count matrix using sample prefixes for groups
+* EdgeR: Differential expression analysis
+
 Structure the directory as follows:
 
 ```
 rna-seq-pipeline/
 │
 ├── data/
-│   ├── sample1_R1.fastq.gz
-│   ├── sample1_R2.fastq.gz
-│   ├── sample2_R1.fastq.gz
-│   ├── sample2_R2.fastq.gz
+│   ├── CTL1_R1.fastq.gz
+│   ├── CTL1_R2.fastq.gz
+│   ├── DIS1_R1.fastq.gz
+│   ├── DIS1_R2.fastq.gz
 │   └── ... (additional samples)
 │
 ├── genome/
