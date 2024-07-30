@@ -2,6 +2,7 @@
 
 Structure the directory as follows:
 
+```
 rna-seq-pipeline/
 │
 ├── data/
@@ -22,3 +23,4 @@ rna-seq-pipeline/
 ├── nextflow.config  (Nextflow configuration file)
 │
 └── Dockerfile  (Dockerfile for building the container - if using Docker)
+```
