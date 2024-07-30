@@ -8,6 +8,12 @@ This pipeline leverages widely used bioinformatics tools to process raw RNA-seq 
 * FeatureCounts: Create mRNA read count matrix using sample prefixes for groups
 * EdgeR: Differential expression analysis
 
+For single-end data, set the single_end parameter to true:
+
+```bash
+nextflow run main.nf --single_end true
+```
+
 Structure the directory as follows:
 
 ```
