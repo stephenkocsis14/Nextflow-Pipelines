@@ -1,9 +1,6 @@
-#!/usr/bin/env nextflow
-
-params.reads = "$baseDir/data/*_{1,2}.fastq.gz"
-params.outdir = "$baseDir/results"
-
 process FastQC {
+    beforeScript 'module load fastqc'
+
     input:
     file fastq from params.reads
 
@@ -33,6 +30,8 @@ process CollectOverrepresentedSequences {
 }
 
 process MultiQC {
+    beforeScript 'module load multiqc'
+
     input:
     file zipfiles from fastqc_results.collect()
 
@@ -46,6 +45,8 @@ process MultiQC {
 }
 
 process Cutadapt {
+    beforeScript 'module load cutadapt'
+
     input:
     file fastq from params.reads
     file overrepresented from combined_sequences
@@ -61,6 +62,8 @@ process Cutadapt {
 }
 
 process STAR {
+    beforeScript 'module load star'
+
     input:
     file trimmed_fastq from trimmed_reads.collect()
 
@@ -74,6 +77,8 @@ process STAR {
 }
 
 process FeatureCounts {
+    beforeScript 'module load subread'
+
     input:
     file bam from aligned_reads.collect()
 
@@ -87,6 +92,8 @@ process FeatureCounts {
 }
 
 process EdgeR {
+    beforeScript 'module load r'
+
     input:
     file counts from counts_table.collect()
 
