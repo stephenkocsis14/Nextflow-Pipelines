@@ -1,3 +1,15 @@
+#!/usr/bin/env nextflow
+
+params.reads = "$baseDir/data/*_{1,2}.fastq.gz"
+params.outdir = "$baseDir/results"
+
+process CreateOutputDir {
+    script:
+    """
+    mkdir -p ${params.outdir}
+    """
+}
+
 process FastQC {
     beforeScript 'module load fastqc'
 
@@ -10,9 +22,9 @@ process FastQC {
 
     script:
     """
-    fastqc ${fastq} --outdir .
-    unzip ${fastq.baseName}_fastqc.zip
-    grep '>>Overrepresented sequences' -A 1000 ${fastq.baseName}_fastqc/fastqc_data.txt | grep -v '>>END_MODULE' | grep -v '>>Overrepresented sequences' > ${fastq.baseName}_overrepresented.txt
+    fastqc ${fastq} --outdir ${params.outdir}
+    unzip ${params.outdir}/${fastq.baseName}_fastqc.zip -d ${params.outdir}
+    grep '>>Overrepresented sequences' -A 1000 ${params.outdir}/${fastq.baseName}_fastqc/fastqc_data.txt | grep -v '>>END_MODULE' | grep -v '>>Overrepresented sequences' > ${params.outdir}/${fastq.baseName}_overrepresented.txt
     """
 }
 
@@ -25,7 +37,7 @@ process CollectOverrepresentedSequences {
 
     script:
     """
-    cat ${overrepresented_files} > combined_overrepresented_sequences.txt
+    cat ${overrepresented_files} > ${params.outdir}/combined_overrepresented_sequences.txt
     """
 }
 
@@ -40,7 +52,7 @@ process MultiQC {
 
     script:
     """
-    multiqc . -o .
+    multiqc ${params.outdir} -o ${params.outdir}
     """
 }
 
@@ -57,7 +69,7 @@ process Cutadapt {
     script:
     """
     adapters=$(grep -v '#' ${overrepresented} | awk '{print $1}' | paste -sd ',' -)
-    cutadapt -a ${adapters} -A ${adapters} -o trimmed_${fastq.baseName}.fastq.gz ${fastq}
+    cutadapt -a ${adapters} -A ${adapters} -o ${params.outdir}/trimmed_${fastq.baseName}.fastq.gz ${fastq}
     """
 }
 
@@ -72,7 +84,7 @@ process STAR {
 
     script:
     """
-    STAR --genomeDir genome/STAR_index --readFilesIn ${trimmed_fastq.join(' ')} --runThreadN 4 --outFileNamePrefix ${trimmed_fastq.baseName}_ --outSAMtype BAM SortedByCoordinate
+    STAR --genomeDir genome/STAR_index --readFilesIn ${trimmed_fastq.join(' ')} --runThreadN 4 --outFileNamePrefix ${params.outdir}/${trimmed_fastq.baseName}_ --outSAMtype BAM SortedByCoordinate
     """
 }
 
@@ -87,12 +99,12 @@ process FeatureCounts {
 
     script:
     """
-    featureCounts -a genome/annotation.gtf -o counts_${bam.baseName}.txt ${bam.join(' ')}
+    featureCounts -a genome/annotation.gtf -o ${params.outdir}/counts_${bam.baseName}.txt ${bam.join(' ')}
     """
 }
 
 process EdgeR {
-    beforeScript 'module load r'
+    beforeScript 'module load R'
 
     input:
     file counts from counts_table.collect()
@@ -104,7 +116,7 @@ process EdgeR {
     """
     Rscript -e "
     library(edgeR)
-    file.names <- Sys.glob('counts_*.txt')
+    file.names <- Sys.glob('${params.outdir}/counts_*.txt')
     count.tables <- lapply(file.names, read.table, header=TRUE, row.names=1)
     sample.names <- gsub('counts_|.txt', '', file.names)
     counts <- do.call(cbind, count.tables)
@@ -122,7 +134,7 @@ process EdgeR {
             for (i in 2:length(levels(group))) {
                 contrast <- makeContrasts(levels(group)[i] - levels(group)[1], levels=design)
                 lrt <- glmLRT(fit, contrast=contrast)
-                write.csv(topTags(lrt, n=Inf), paste0('edgeR_results_', levels(group)[i], '_vs_', levels(group)[1], '.csv'))
+                write.csv(topTags(lrt, n=Inf), paste0('${params.outdir}/edgeR_results_', levels(group)[i], '_vs_', levels(group)[1], '.csv'))
             }
         }
     }
@@ -131,6 +143,7 @@ process EdgeR {
 }
 
 workflow {
+    create_output_dir = CreateOutputDir()
     fastqc_results = FastQC()
     combined_sequences = CollectOverrepresentedSequences(fastqc_results)
     multiqc_report = MultiQC(fastqc_results)
