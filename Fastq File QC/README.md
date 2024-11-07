@@ -69,7 +69,7 @@ The pipeline creates the following directory structure in the specified output d
 
 This pipeline is licensed under the MIT license.
 
-### Acknoweledements
+### Acknowledgments
 
 This pipeline was created using Nextflow for streamlining quality control of FASTQ files with FastQC and MultiQC. 
 
