@@ -2,6 +2,16 @@
 
 This Nextflow pipeline performs quality control on FASTQ files using [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/) and aggregates the results with [MultiQC](https://multiqc.info/). The pipeline supports both gzipped (`.fastq.gz`) and uncompressed (`.fastq`) FASTQ files.
 
+## Table of Contents
+- [Requirements](#requirements)
+- [Usage](#usage)
+  - [Basic Command](#basic-command)
+  - [Parameters](#parameters)
+  - [Examples](#examples)
+- [Output](#output)
+- [License](#license)
+- [Acknowledgments](#acknowledgments)
+
 ## Requirements
 
 - **Nextflow**: Install Nextflow by following the [installation instructions](https://www.nextflow.io/docs/latest/getstarted.html).
